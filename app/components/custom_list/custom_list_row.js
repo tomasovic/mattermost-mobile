@@ -3,12 +3,9 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {
-    StyleSheet,
-    View,
-} from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import { paddingLeft as padding } from 'app/components/safe_area_view/iphone_x_spacing';
 import ConditionalTouchable from 'app/components/conditional_touchable';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
@@ -33,25 +30,25 @@ export default class CustomListRow extends React.PureComponent {
             <ConditionalTouchable
                 touchable={Boolean(this.props.enabled && this.props.onPress)}
                 onPress={this.props.onPress}
-                style={style.touchable}
-            >
-                <View style={[style.container, padding(this.props.isLandscape)]}>
-                    {this.props.selectable &&
+                style={style.touchable}>
+                <View
+                    style={[style.container, padding(this.props.isLandscape)]}>
+                    {this.props.selectable && (
                         <View style={style.selectorContainer}>
-                            <View style={[style.selector, (this.props.selected && style.selectorFilled), (!this.props.enabled && style.selectorDisabled)]}>
-                                {this.props.selected &&
-                                    <Icon
-                                        name='check'
-                                        size={16}
-                                        color='#fff'
-                                    />
-                                }
+                            <View
+                                style={[
+                                    style.selector,
+                                    this.props.selected && style.selectorFilled,
+                                    !this.props.enabled &&
+                                        style.selectorDisabled,
+                                ]}>
+                                {this.props.selected && (
+                                    <Icon name='check' size={16} color='#fff' />
+                                )}
                             </View>
                         </View>
-                    }
-                    <View style={style.children}>
-                        {this.props.children}
-                    </View>
+                    )}
+                    <View style={style.children}>{this.props.children}</View>
                 </View>
             </ConditionalTouchable>
         );

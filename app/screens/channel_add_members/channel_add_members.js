@@ -1,37 +1,33 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
-import {
-    Alert,
-    Platform,
-    View,
-} from 'react-native';
-import {Navigation} from 'react-native-navigation';
+import { intlShape } from 'react-intl';
+import { Alert, Platform, View } from 'react-native';
+import { Navigation } from 'react-native-navigation';
 
-import {debounce} from 'mattermost-redux/actions/helpers';
-import {General} from 'mattermost-redux/constants';
-import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
+import { debounce } from 'mattermost-redux/actions/helpers';
+import { General } from 'mattermost-redux/constants';
+import { filterProfilesMatchingTerm } from 'mattermost-redux/utils/user_utils';
 
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import { paddingHorizontal as padding } from 'app/components/safe_area_view/iphone_x_spacing';
 import Loading from 'app/components/loading';
-import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
+import CustomList, { FLATLIST, SECTIONLIST } from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
 import FormattedText from 'app/components/formatted_text';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
-import {alertErrorIfInvalidPermissions} from 'app/utils/general';
-import {createProfilesSections, loadingText} from 'app/utils/member_list';
+import { alertErrorIfInvalidPermissions } from 'app/utils/general';
+import { createProfilesSections, loadingText } from 'app/utils/member_list';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
-import {popTopScreen, setButtons} from 'app/actions/navigation';
+import { popTopScreen, setButtons } from 'app/actions/navigation';
 
 export default class ChannelAddMembers extends PureComponent {
     static propTypes = {
@@ -77,7 +73,10 @@ export default class ChannelAddMembers extends PureComponent {
         this.addButton = {
             enalbed: false,
             id: 'add-members',
-            text: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
+            text: context.intl.formatMessage({
+                id: 'integrations.add',
+                defaultMessage: 'Add',
+            }),
             color: props.theme.sidebarHeaderTextColor,
             showAsAction: 'always',
         };
@@ -90,7 +89,7 @@ export default class ChannelAddMembers extends PureComponent {
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
 
-        const {actions, currentTeamId} = this.props;
+        const { actions, currentTeamId } = this.props;
 
         actions.getTeamStats(currentTeamId);
         this.getProfiles();
@@ -99,8 +98,8 @@ export default class ChannelAddMembers extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {componentId, theme} = this.props;
-        const {adding, selectedIds} = this.state;
+        const { componentId, theme } = this.props;
+        const { adding, selectedIds } = this.state;
         const enabled = Object.keys(selectedIds).length > 0 && !adding;
 
         this.enableAddOption(enabled);
@@ -110,14 +109,14 @@ export default class ChannelAddMembers extends PureComponent {
         }
     }
 
-    navigationButtonPressed({buttonId}) {
+    navigationButtonPressed({ buttonId }) {
         if (buttonId === this.addButton.id) {
             this.handleAddMembersPress();
         }
     }
 
     clearSearch = () => {
-        this.setState({term: '', searchResults: []});
+        this.setState({ term: '', searchResults: [] });
     };
 
     close = () => {
@@ -125,42 +124,55 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     enableAddOption = (enabled) => {
-        const {componentId} = this.props;
+        const { componentId } = this.props;
         setButtons(componentId, {
-            rightButtons: [{...this.addButton, enabled}],
+            rightButtons: [{ ...this.addButton, enabled }],
         });
     };
 
     getProfiles = debounce(() => {
-        const {loading, term} = this.state;
+        const { loading, term } = this.state;
         if (this.next && !loading && !term) {
-            this.setState({loading: true}, () => {
-                const {actions, currentChannelId, currentChannelGroupConstrained, currentTeamId} = this.props;
-
-                actions.getProfilesNotInChannel(
-                    currentTeamId,
+            this.setState({ loading: true }, () => {
+                const {
+                    actions,
                     currentChannelId,
                     currentChannelGroupConstrained,
-                    this.page + 1,
-                    General.PROFILE_CHUNK_SIZE
-                ).then(this.onProfilesLoaded);
+                    currentTeamId,
+                } = this.props;
+
+                actions
+                    .getProfilesNotInChannel(
+                        currentTeamId,
+                        currentChannelId,
+                        currentChannelGroupConstrained,
+                        this.page + 1,
+                        General.PROFILE_CHUNK_SIZE,
+                    )
+                    .then(this.onProfilesLoaded);
             });
         }
     }, 100);
 
     handleAddMembersPress = () => {
-        const {formatMessage} = this.context.intl;
-        const {actions, currentChannelId} = this.props;
-        const {selectedIds, adding} = this.state;
-        const membersToAdd = Object.keys(selectedIds).filter((id) => selectedIds[id]);
+        const { formatMessage } = this.context.intl;
+        const { actions, currentChannelId } = this.props;
+        const { selectedIds, adding } = this.state;
+        const membersToAdd = Object.keys(selectedIds).filter(
+            (id) => selectedIds[id],
+        );
 
         if (!membersToAdd.length) {
             Alert.alert(
-                formatMessage({id: 'channel_header.addMembers', defaultMessage: 'Add Members'}),
+                formatMessage({
+                    id: 'channel_header.addMembers',
+                    defaultMessage: 'Add Members',
+                }),
                 formatMessage({
                     id: 'mobile.channel_members.add_members_alert',
-                    defaultMessage: 'You must select at least one member to add to the channel.',
-                })
+                    defaultMessage:
+                        'You must select at least one member to add to the channel.',
+                }),
             );
 
             return;
@@ -168,13 +180,16 @@ export default class ChannelAddMembers extends PureComponent {
 
         if (!adding) {
             this.enableAddOption(false);
-            this.setState({adding: true}, async () => {
-                const result = await actions.handleAddChannelMembers(currentChannelId, membersToAdd);
+            this.setState({ adding: true }, async () => {
+                const result = await actions.handleAddChannelMembers(
+                    currentChannelId,
+                    membersToAdd,
+                );
 
                 if (result.error) {
                     alertErrorIfInvalidPermissions(result);
                     this.enableAddOption(true);
-                    this.setState({adding: false});
+                    this.setState({ adding: false });
                 } else {
                     this.close();
                 }
@@ -183,8 +198,10 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     handleSelectProfile = (id) => {
-        const {selectedIds} = this.state;
-        const newSelected = Object.assign({}, selectedIds, {[id]: !selectedIds[id]});
+        const { selectedIds } = this.state;
+        const newSelected = Object.assign({}, selectedIds, {
+            [id]: !selectedIds[id],
+        });
 
         if (Object.values(newSelected).filter((selected) => selected).length) {
             this.enableAddOption(true);
@@ -192,10 +209,10 @@ export default class ChannelAddMembers extends PureComponent {
             this.enableAddOption(false);
         }
 
-        this.setState({selectedIds: newSelected});
+        this.setState({ selectedIds: newSelected });
     };
 
-    onProfilesLoaded = ({data}) => {
+    onProfilesLoaded = ({ data }) => {
         if (data && !data.length) {
             this.next = false;
         }
@@ -208,7 +225,7 @@ export default class ChannelAddMembers extends PureComponent {
 
     onSearch = (text) => {
         if (text) {
-            this.setState({term: text});
+            this.setState({ term: text });
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
@@ -235,8 +252,8 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     renderLoading = () => {
-        const {theme} = this.props;
-        const {loading} = this.state;
+        const { theme } = this.props;
+        const { loading } = this.state;
         const style = getStyleFromTheme(theme);
 
         if (!loading) {
@@ -245,17 +262,14 @@ export default class ChannelAddMembers extends PureComponent {
 
         return (
             <View style={style.loadingContainer}>
-                <FormattedText
-                    {...loadingText}
-                    style={style.loadingText}
-                />
+                <FormattedText {...loadingText} style={style.loadingText} />
             </View>
         );
     };
 
     renderNoResults = () => {
-        const {loading} = this.state;
-        const {theme} = this.props;
+        const { loading } = this.state;
+        const { theme } = this.props;
         const style = getStyleFromTheme(theme);
 
         if (loading || this.page === -1) {
@@ -274,18 +288,32 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     searchProfiles = (term) => {
-        const {actions, currentChannelId, currentChannelGroupConstrained, currentTeamId} = this.props;
-        const options = {not_in_channel_id: currentChannelId, team_id: currentTeamId, group_constrained: currentChannelGroupConstrained};
-        this.setState({loading: true});
+        const {
+            actions,
+            currentChannelId,
+            currentChannelGroupConstrained,
+            currentTeamId,
+        } = this.props;
+        const options = {
+            not_in_channel_id: currentChannelId,
+            team_id: currentTeamId,
+            group_constrained: currentChannelGroupConstrained,
+        };
+        this.setState({ loading: true });
 
-        actions.searchProfiles(term.toLowerCase(), options).then(({data}) => {
-            this.setState({searchResults: data, loading: false});
+        actions.searchProfiles(term.toLowerCase(), options).then(({ data }) => {
+            this.setState({ searchResults: data, loading: false });
         });
     };
 
     render() {
-        const {formatMessage} = this.context.intl;
-        const {currentUserId, profilesNotInChannel, theme, isLandscape} = this.props;
+        const { formatMessage } = this.context.intl;
+        const {
+            currentUserId,
+            profilesNotInChannel,
+            theme,
+            isLandscape,
+        } = this.props;
         const {
             adding,
             loading,
@@ -298,8 +326,8 @@ export default class ChannelAddMembers extends PureComponent {
         if (adding) {
             return (
                 <View style={style.container}>
-                    <StatusBar/>
-                    <Loading/>
+                    <StatusBar />
+                    <Loading />
                 </View>
             );
         }
@@ -319,7 +347,10 @@ export default class ChannelAddMembers extends PureComponent {
         let listType;
         if (term) {
             const exactMatches = [];
-            const results = filterProfilesMatchingTerm(searchResults, term).filter((p) => {
+            const results = filterProfilesMatchingTerm(
+                searchResults,
+                term,
+            ).filter((p) => {
                 if (p.id === currentUserId) {
                     return false;
                 }
@@ -334,30 +365,49 @@ export default class ChannelAddMembers extends PureComponent {
             data = [...exactMatches, ...results];
             listType = FLATLIST;
         } else {
-            data = createProfilesSections(profilesNotInChannel.filter((user) => user.delete_at === 0));
+            data = createProfilesSections(
+                profilesNotInChannel.filter((user) => user.delete_at === 0),
+            );
             listType = SECTIONLIST;
         }
 
         return (
             <KeyboardLayout>
-                <StatusBar/>
+                <StatusBar />
                 <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
                         ref='search_bar'
-                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        placeholder={formatMessage({
+                            id: 'search_bar.search',
+                            defaultMessage: 'Search',
+                        })}
+                        cancelTitle={formatMessage({
+                            id: 'mobile.post.cancel',
+                            defaultMessage: 'Cancel',
+                        })}
                         backgroundColor='transparent'
                         inputHeight={33}
                         inputStyle={searchBarInput}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                        placeholderTextColor={changeOpacity(
+                            theme.centerChannelColor,
+                            0.5,
+                        )}
+                        tintColorSearch={changeOpacity(
+                            theme.centerChannelColor,
+                            0.5,
+                        )}
+                        tintColorDelete={changeOpacity(
+                            theme.centerChannelColor,
+                            0.5,
+                        )}
                         titleCancelColor={theme.centerChannelColor}
                         onChangeText={this.onSearch}
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(
+                            theme,
+                        )}
                         value={term}
                     />
                 </View>

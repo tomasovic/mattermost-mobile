@@ -18,7 +18,9 @@
   "rules": {
     "global-require": 0,
     "react/display-name": [2, { "ignoreTranspilerName": false }],
-    "react/jsx-filename-extension": [2, {"extensions": [".js"]}]
+    "react/jsx-filename-extension": [2, { "extensions": [".js"] }],
+    "object-curly-spacing": "off",
+    ""
   },
   "overrides": [
     {

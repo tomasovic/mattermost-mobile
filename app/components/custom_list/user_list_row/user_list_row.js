@@ -3,19 +3,16 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
-import {
-    Text,
-    View,
-} from 'react-native';
+import { intlShape } from 'react-intl';
+import { Text, View } from 'react-native';
 
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
+import { displayUsername } from 'mattermost-redux/utils/user_utils';
 
 import CustomListRow from 'app/components/custom_list/custom_list_row';
 import ProfilePicture from 'app/components/profile_picture';
-import {BotTag, GuestTag} from 'app/components/tag';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {isGuest} from 'app/utils/users';
+import { BotTag, GuestTag } from 'app/components/tag';
+import { makeStyleSheetFromTheme, changeOpacity } from 'app/utils/theme';
+import { isGuest } from 'app/utils/users';
 
 export default class UserListRow extends React.PureComponent {
     static propTypes = {
@@ -38,7 +35,7 @@ export default class UserListRow extends React.PureComponent {
     };
 
     render() {
-        const {formatMessage} = this.context.intl;
+        const { formatMessage } = this.context.intl;
         const {
             enabled,
             isMyUser,
@@ -50,15 +47,18 @@ export default class UserListRow extends React.PureComponent {
             isLandscape,
         } = this.props;
 
-        const {id, username} = user;
+        const { id, username } = user;
         const style = getStyleFromTheme(theme);
 
         let usernameDisplay = `@${username}`;
         if (isMyUser) {
-            usernameDisplay = formatMessage({
-                id: 'mobile.more_dms.you',
-                defaultMessage: '@{username} - you',
-            }, {username});
+            usernameDisplay = formatMessage(
+                {
+                    id: 'mobile.more_dms.you',
+                    defaultMessage: '@{username} - you',
+                },
+                { username },
+            );
         }
 
         const teammateDisplay = displayUsername(user, teammateNameDisplay);
@@ -72,13 +72,9 @@ export default class UserListRow extends React.PureComponent {
                     enabled={enabled}
                     selectable={selectable}
                     selected={selected}
-                    isLandscape={isLandscape}
-                >
+                    isLandscape={isLandscape}>
                     <View style={style.profileContainer}>
-                        <ProfilePicture
-                            userId={id}
-                            size={32}
-                        />
+                        <ProfilePicture userId={id} size={32} />
                     </View>
                     <View style={style.textContainer}>
                         <View>
@@ -86,40 +82,36 @@ export default class UserListRow extends React.PureComponent {
                                 <Text
                                     style={style.username}
                                     ellipsizeMode='tail'
-                                    numberOfLines={1}
-                                >
+                                    numberOfLines={1}>
                                     {usernameDisplay}
                                 </Text>
                                 <BotTag
                                     show={Boolean(user.is_bot)}
                                     theme={theme}
                                 />
-                                <GuestTag
-                                    show={isGuest(user)}
-                                    theme={theme}
-                                />
+                                <GuestTag show={isGuest(user)} theme={theme} />
                             </View>
                         </View>
-                        {showTeammateDisplay &&
-                        <View>
-                            <Text
-                                style={style.displayName}
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                            >
-                                {teammateDisplay}
-                            </Text>
-                        </View>
-                        }
-                        {user.delete_at > 0 &&
-                        <View>
-                            <Text
-                                style={style.deactivated}
-                            >
-                                {formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}
-                            </Text>
-                        </View>
-                        }
+                        {showTeammateDisplay && (
+                            <View>
+                                <Text
+                                    style={style.displayName}
+                                    ellipsizeMode='tail'
+                                    numberOfLines={1}>
+                                    {teammateDisplay}
+                                </Text>
+                            </View>
+                        )}
+                        {user.delete_at > 0 && (
+                            <View>
+                                <Text style={style.deactivated}>
+                                    {formatMessage({
+                                        id: 'mobile.user_list.deactivated',
+                                        defaultMessage: 'Deactivated',
+                                    })}
+                                </Text>
+                            </View>
+                        )}
                     </View>
                 </CustomListRow>
             </View>

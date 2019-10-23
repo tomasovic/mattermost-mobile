@@ -3,10 +3,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-    Text,
-    View,
-} from 'react-native';
+import {Text, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
@@ -52,10 +49,7 @@ export default class ChannelListRow extends React.PureComponent {
             >
                 <View style={style.container}>
                     <View style={style.titleContainer}>
-                        <Icon
-                            name='globe'
-                            style={style.icon}
-                        />
+                        <Icon name='globe' style={style.icon} />
                         <Text style={style.displayName}>
                             {this.props.channel.display_name}
                         </Text>
@@ -67,7 +61,7 @@ export default class ChannelListRow extends React.PureComponent {
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme(theme => {
     return {
         titleContainer: {
             alignItems: 'center',

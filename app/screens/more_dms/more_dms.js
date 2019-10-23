@@ -1,36 +1,39 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
-import {Platform, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
+import { intlShape } from 'react-intl';
+import { Platform, View } from 'react-native';
+import { Navigation } from 'react-native-navigation';
 
-import {debounce} from 'mattermost-redux/actions/helpers';
-import {General} from 'mattermost-redux/constants';
+import { debounce } from 'mattermost-redux/actions/helpers';
+import { General } from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {getGroupDisplayNameFromUserIds} from 'mattermost-redux/utils/channel_utils';
-import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
+import { getGroupDisplayNameFromUserIds } from 'mattermost-redux/utils/channel_utils';
+import {
+    displayUsername,
+    filterProfilesMatchingTerm,
+} from 'mattermost-redux/utils/user_utils';
 
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
+import { paddingHorizontal as padding } from 'app/components/safe_area_view/iphone_x_spacing';
+import CustomList, { FLATLIST, SECTIONLIST } from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
 import FormattedText from 'app/components/formatted_text';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
-import {alertErrorWithFallback} from 'app/utils/general';
-import {createProfilesSections, loadingText} from 'app/utils/member_list';
+import { alertErrorWithFallback } from 'app/utils/general';
+import { createProfilesSections, loadingText } from 'app/utils/member_list';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {dismissModal, setButtons} from 'app/actions/navigation';
+import { t } from 'app/utils/i18n';
+import { dismissModal, setButtons } from 'app/actions/navigation';
 
 import SelectedUsers from './selected_users';
 
@@ -94,8 +97,8 @@ export default class MoreDirectMessages extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {componentId, theme} = this.props;
-        const {selectedCount, startingConversation} = this.state;
+        const { componentId, theme } = this.props;
+        const { selectedCount, startingConversation } = this.state;
         const canStart = selectedCount > 0 && !startingConversation;
 
         this.updateNavigationButtons(canStart);
@@ -105,7 +108,7 @@ export default class MoreDirectMessages extends PureComponent {
         }
     }
 
-    navigationButtonPressed({buttonId}) {
+    navigationButtonPressed({ buttonId }) {
         if (buttonId === START_BUTTON) {
             this.startConversation();
         } else if (buttonId === CLOSE_BUTTON) {
@@ -118,26 +121,38 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     clearSearch = () => {
-        this.setState({term: '', searchResults: []});
+        this.setState({ term: '', searchResults: [] });
     };
 
     getProfiles = debounce(() => {
-        const {loading, term} = this.state;
+        const { loading, term } = this.state;
         if (this.next && !loading && !term && this.mounted) {
-            this.setState({loading: true}, () => {
-                const {actions, currentTeamId, restrictDirectMessage} = this.props;
+            this.setState({ loading: true }, () => {
+                const {
+                    actions,
+                    currentTeamId,
+                    restrictDirectMessage,
+                } = this.props;
 
                 if (restrictDirectMessage) {
-                    actions.getProfiles(this.page + 1, General.PROFILE_CHUNK_SIZE).then(this.loadedProfiles);
+                    actions
+                        .getProfiles(this.page + 1, General.PROFILE_CHUNK_SIZE)
+                        .then(this.loadedProfiles);
                 } else {
-                    actions.getProfilesInTeam(currentTeamId, this.page + 1, General.PROFILE_CHUNK_SIZE).then(this.loadedProfiles);
+                    actions
+                        .getProfilesInTeam(
+                            currentTeamId,
+                            this.page + 1,
+                            General.PROFILE_CHUNK_SIZE,
+                        )
+                        .then(this.loadedProfiles);
                 }
             });
         }
     }, 100);
 
     handleSelectProfile = (id) => {
-        const {currentUserId} = this.props;
+        const { currentUserId } = this.props;
 
         if (id === currentUserId) {
             const selectedId = {};
@@ -146,18 +161,23 @@ export default class MoreDirectMessages extends PureComponent {
             this.startConversation(selectedId);
         } else {
             this.setState((prevState) => {
-                const {selectedIds} = prevState;
-
+                const { selectedIds } = prevState;
                 const wasSelected = selectedIds[id];
 
                 // Prevent selecting too many users
-                if (!wasSelected && Object.keys(selectedIds).length >= General.MAX_USERS_IN_GM - 1) {
+                if (
+                    !wasSelected &&
+                    Object.keys(selectedIds).length >=
+                        General.MAX_USERS_IN_GM - 1
+                ) {
                     return {};
                 }
 
                 const newSelectedIds = Object.assign({}, selectedIds);
                 if (!wasSelected) {
                     newSelectedIds[id] = true;
+                } else {
+                    newSelectedIds[id] = false;
                 }
 
                 return {
@@ -172,7 +192,7 @@ export default class MoreDirectMessages extends PureComponent {
 
     handleRemoveProfile = (id) => {
         this.setState((prevState) => {
-            const {selectedIds} = prevState;
+            const { selectedIds } = prevState;
 
             const newSelectedIds = Object.assign({}, selectedIds);
 
@@ -190,24 +210,27 @@ export default class MoreDirectMessages extends PureComponent {
             return false;
         }
 
-        return state.selectedCount >= 1 && state.selectedCount <= General.MAX_USERS_IN_GM - 1;
+        return (
+            state.selectedCount >= 1 &&
+            state.selectedCount <= General.MAX_USERS_IN_GM - 1
+        );
     };
 
-    loadedProfiles = ({data}) => {
+    loadedProfiles = ({ data }) => {
         if (this.mounted) {
-            const {profiles} = this.state;
+            const { profiles } = this.state;
             if (data && !data.length) {
                 this.next = false;
             }
 
             this.page += 1;
-            this.setState({loading: false, profiles: [...profiles, ...data]});
+            this.setState({ loading: false, profiles: [...profiles, ...data] });
         }
     };
 
     makeDirectChannel = async (id) => {
-        const {intl} = this.context;
-        const {actions, allProfiles, teammateNameDisplay} = this.props;
+        const { intl } = this.context;
+        const { actions, allProfiles, teammateNameDisplay } = this.props;
 
         const user = allProfiles[id];
 
@@ -222,11 +245,12 @@ export default class MoreDirectMessages extends PureComponent {
                 result.error,
                 {
                     id: 'mobile.open_dm.error',
-                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
+                    defaultMessage:
+                        "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
                 },
                 {
                     displayName,
-                }
+                },
             );
         }
 
@@ -234,7 +258,7 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     makeGroupChannel = async (ids) => {
-        const {intl} = this.context;
+        const { intl } = this.context;
         const {
             actions,
             allProfiles,
@@ -243,18 +267,20 @@ export default class MoreDirectMessages extends PureComponent {
         } = this.props;
 
         const result = await actions.makeGroupChannel(ids);
-        const displayName = getGroupDisplayNameFromUserIds(ids, allProfiles, currentUserId, teammateNameDisplay);
+        const displayName = getGroupDisplayNameFromUserIds(
+            ids,
+            allProfiles,
+            currentUserId,
+            teammateNameDisplay,
+        );
         actions.setChannelDisplayName(displayName);
 
         if (result.error) {
-            alertErrorWithFallback(
-                intl,
-                result.error,
-                {
-                    id: t('mobile.open_gm.error'),
-                    defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
-                }
-            );
+            alertErrorWithFallback(intl, result.error, {
+                id: t('mobile.open_gm.error'),
+                defaultMessage:
+                    "We couldn't open a group message with those users. Please check your connection and try again.",
+            });
         }
 
         return !result.error;
@@ -262,7 +288,7 @@ export default class MoreDirectMessages extends PureComponent {
 
     onSearch = (text) => {
         if (text) {
-            this.setState({term: text});
+            this.setState({ term: text });
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
@@ -275,25 +301,24 @@ export default class MoreDirectMessages extends PureComponent {
 
     searchProfiles = (term) => {
         const lowerCasedTerm = term.toLowerCase();
-        const {actions, currentTeamId, restrictDirectMessage} = this.props;
-        this.setState({loading: true});
+        const { actions, currentTeamId, restrictDirectMessage } = this.props;
+        this.setState({ loading: true });
 
         if (restrictDirectMessage) {
-            actions.searchProfiles(lowerCasedTerm).then(({data}) => {
-                this.setState({searchResults: data, loading: false});
+            actions.searchProfiles(lowerCasedTerm).then(({ data }) => {
+                this.setState({ searchResults: data, loading: false });
             });
         } else {
-            actions.searchProfiles(lowerCasedTerm, {team_id: currentTeamId}).then(({data}) => {
-                this.setState({searchResults: data, loading: false});
-            });
+            actions
+                .searchProfiles(lowerCasedTerm, { team_id: currentTeamId })
+                .then(({ data }) => {
+                    this.setState({ searchResults: data, loading: false });
+                });
         }
     };
 
     startConversation = async (selectedId) => {
-        const {
-            currentDisplayName,
-            actions,
-        } = this.props;
+        const { currentDisplayName, actions } = this.props;
 
         if (this.state.startingConversation) {
             return;
@@ -306,7 +331,9 @@ export default class MoreDirectMessages extends PureComponent {
         // Save the current channel display name in case it fails
         const currentChannelDisplayName = currentDisplayName;
 
-        const selectedIds = selectedId ? Object.keys(selectedId) : Object.keys(this.state.selectedIds);
+        const selectedIds = selectedId
+            ? Object.keys(selectedId)
+            : Object.keys(this.state.selectedIds);
         let success;
         if (selectedIds.length === 0) {
             success = false;
@@ -331,16 +358,21 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     updateNavigationButtons = (startEnabled, context = this.context) => {
-        const {componentId, theme} = this.props;
-        const {formatMessage} = context.intl;
+        const { componentId, theme } = this.props;
+        const { formatMessage } = context.intl;
         setButtons(componentId, {
-            rightButtons: [{
-                color: theme.sidebarHeaderTextColor,
-                id: START_BUTTON,
-                text: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
-                showAsAction: 'always',
-                enabled: startEnabled,
-            }],
+            rightButtons: [
+                {
+                    color: theme.sidebarHeaderTextColor,
+                    id: START_BUTTON,
+                    text: formatMessage({
+                        id: 'mobile.more_dms.start',
+                        defaultMessage: 'Start',
+                    }),
+                    showAsAction: 'always',
+                    enabled: startEnabled,
+                },
+            ],
         });
     };
 
@@ -360,8 +392,8 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     renderLoading = () => {
-        const {theme} = this.props;
-        const {loading} = this.state;
+        const { theme } = this.props;
+        const { loading } = this.state;
         const style = getStyleFromTheme(theme);
 
         if (!loading) {
@@ -370,17 +402,14 @@ export default class MoreDirectMessages extends PureComponent {
 
         return (
             <View style={style.loadingContainer}>
-                <FormattedText
-                    {...loadingText}
-                    style={style.loadingText}
-                />
+                <FormattedText {...loadingText} style={style.loadingText} />
             </View>
         );
     };
 
     renderNoResults = () => {
-        const {loading} = this.state;
-        const {theme} = this.props;
+        const { loading } = this.state;
+        const { theme } = this.props;
         const style = getStyleFromTheme(theme);
 
         if (loading || this.page === -1) {
@@ -399,8 +428,8 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     render() {
-        const {formatMessage} = this.context.intl;
-        const {currentUserId, theme, isLandscape} = this.props;
+        const { formatMessage } = this.context.intl;
+        const { currentUserId, theme, isLandscape } = this.props;
         const {
             loading,
             profiles,
@@ -415,8 +444,8 @@ export default class MoreDirectMessages extends PureComponent {
         if (startingConversation) {
             return (
                 <View style={style.container}>
-                    <StatusBar/>
-                    <Loading/>
+                    <StatusBar />
+                    <Loading />
                 </View>
             );
         }
@@ -436,7 +465,10 @@ export default class MoreDirectMessages extends PureComponent {
         let listType;
         if (term) {
             const exactMatches = [];
-            const results = filterProfilesMatchingTerm(searchResults, term).filter((p) => {
+            const results = filterProfilesMatchingTerm(
+                searchResults,
+                term,
+            ).filter((p) => {
                 if (selectedCount > 0 && p.id === currentUserId) {
                     return false;
                 }
@@ -457,24 +489,41 @@ export default class MoreDirectMessages extends PureComponent {
 
         return (
             <KeyboardLayout>
-                <StatusBar/>
+                <StatusBar />
                 <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
                         ref='search_bar'
-                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        placeholder={formatMessage({
+                            id: 'search_bar.search',
+                            defaultMessage: 'Search',
+                        })}
+                        cancelTitle={formatMessage({
+                            id: 'mobile.post.cancel',
+                            defaultMessage: 'Cancel',
+                        })}
                         backgroundColor='transparent'
                         inputHeight={33}
                         inputStyle={searchBarInput}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                        placeholderTextColor={changeOpacity(
+                            theme.centerChannelColor,
+                            0.5,
+                        )}
+                        tintColorSearch={changeOpacity(
+                            theme.centerChannelColor,
+                            0.5,
+                        )}
+                        tintColorDelete={changeOpacity(
+                            theme.centerChannelColor,
+                            0.5,
+                        )}
                         titleCancelColor={theme.centerChannelColor}
                         onChangeText={this.onSearch}
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(
+                            theme,
+                        )}
                         value={term}
                     />
                     <SelectedUsers
